@@ -5,7 +5,7 @@ import java.awt.*;
 
 public class StudentDashboard extends JFrame {
 
-    private final int registrationId;   // ✅ final = good practice
+    private final int registrationId;
 
     public StudentDashboard(int registrationId) {
         this.registrationId = registrationId;
@@ -31,17 +31,11 @@ public class StudentDashboard extends JFrame {
         add(grid, BorderLayout.CENTER);
 
         // ✅ FIELD IS USED HERE
-        registerBtn.addActionListener(e ->
-            new CourseRegistrationFrame(this.registrationId)
-        );
+        registerBtn.addActionListener(e -> new CourseRegistrationFrame(this.registrationId));
 
-        dropBtn.addActionListener(e ->
-            new DropCourseFrame(this.registrationId)
-        );
+        dropBtn.addActionListener(e -> new DropCourseFrame(this.registrationId));
 
-        viewBtn.addActionListener(e ->
-            new TimetableFrame(this.registrationId)
-        );
+        viewBtn.addActionListener(e -> new TimetableFrame(this.registrationId));
 
         logoutBtn.addActionListener(e -> {
             dispose();

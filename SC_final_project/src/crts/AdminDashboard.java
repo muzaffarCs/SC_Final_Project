@@ -28,22 +28,11 @@ public class AdminDashboard extends JFrame {
         add(grid, BorderLayout.CENTER);
 
         // -------- Actions --------
-        manageBtn.addActionListener(e ->
-            new CourseManagerFrame()
-        );
+        manageBtn.addActionListener(e -> new CourseManagerFrame());
 
-        reportBtn.addActionListener(e ->
-            new ReportFrame()
-        );
+        reportBtn.addActionListener(e -> new ReportFrame());
 
-        timetableBtn.addActionListener(e ->
-            JOptionPane.showMessageDialog(
-                this,
-                "Timetable is generated dynamically per student.",
-                "Info",
-                JOptionPane.INFORMATION_MESSAGE
-            )
-        );
+        timetableBtn.addActionListener(e -> new GenerateTimetableFrame());
 
         logoutBtn.addActionListener(e -> {
             dispose();

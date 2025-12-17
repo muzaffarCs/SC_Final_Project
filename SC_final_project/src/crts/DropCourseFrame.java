@@ -32,7 +32,8 @@ public class DropCourseFrame extends JFrame {
         Dimension fieldSize = new Dimension(220, 28);
 
         // ---------- Course Code ----------
-        c.gridx = 0; c.gridy = 0;
+        c.gridx = 0;
+        c.gridy = 0;
         form.add(new JLabel("Course Code"), c);
 
         c.gridx = 1;
@@ -43,7 +44,8 @@ public class DropCourseFrame extends JFrame {
         JButton dropBtn = UIHelper.button("Drop Course");
         dropBtn.setPreferredSize(new Dimension(150, 35));
 
-        c.gridx = 0; c.gridy = 1;
+        c.gridx = 0;
+        c.gridy = 1;
         c.gridwidth = 2;
         c.anchor = GridBagConstraints.CENTER;
         form.add(dropBtn, c);
@@ -67,8 +69,7 @@ public class DropCourseFrame extends JFrame {
 
             // Get course_id
             PreparedStatement ps = con.prepareStatement(
-                "SELECT course_id FROM courses WHERE course_code=?"
-            );
+                    "SELECT course_id FROM courses WHERE course_code=?");
             ps.setString(1, courseCode);
             ResultSet rs = ps.executeQuery();
 
@@ -80,8 +81,7 @@ public class DropCourseFrame extends JFrame {
             int courseId = rs.getInt(1);
 
             PreparedStatement del = con.prepareStatement(
-                "DELETE FROM registrations WHERE registration_id=? AND course_id=?"
-            );
+                    "DELETE FROM registrations WHERE registration_id=? AND course_id=?");
             del.setInt(1, registrationId);
             del.setInt(2, courseId);
 
@@ -91,8 +91,7 @@ public class DropCourseFrame extends JFrame {
             }
 
             PreparedStatement update = con.prepareStatement(
-                "UPDATE courses SET available_seats = available_seats + 1 WHERE course_id=?"
-            );
+                    "UPDATE courses SET available_seats = available_seats + 1 WHERE course_id=?");
             update.setInt(1, courseId);
             update.executeUpdate();
 
