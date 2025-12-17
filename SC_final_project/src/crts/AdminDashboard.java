@@ -4,27 +4,53 @@ import javax.swing.*;
 import java.awt.*;
 
 public class AdminDashboard extends JFrame {
+
     public AdminDashboard() {
+
         setTitle("Admin Dashboard");
-        setLayout(new GridLayout(2,2,15,15));
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setLayout(new BorderLayout());
 
-        JButton manage = new JButton("Manage Courses");
-        JButton timetable = new JButton("Generate Timetable");
-        JButton reports = new JButton("Reports");
-        JButton logout = new JButton("Logout");
+        add(UIHelper.title("ADMIN DASHBOARD"), BorderLayout.NORTH);
 
-        add(manage); add(timetable);
-        add(reports); add(logout);
+        JPanel grid = UIHelper.panel(new GridLayout(2, 2, 20, 20));
 
-        manage.addActionListener(e -> new CourseManagerFrame());
-        timetable.addActionListener(e -> {
-    JOptionPane.showMessageDialog(this,
-        "Timetable generated successfully.\nNo conflicts detected.");
-});
-        reports.addActionListener(e -> new ReportFrame());
-        logout.addActionListener(e -> { dispose(); new LoginFrame(); });
+        JButton manageBtn = UIHelper.button("Manage Courses");
+        JButton timetableBtn = UIHelper.button("Generate Timetable");
+        JButton reportBtn = UIHelper.button("Reports");
+        JButton logoutBtn = UIHelper.button("Logout");
 
-        setSize(500,300);
+        grid.add(manageBtn);
+        grid.add(timetableBtn);
+        grid.add(reportBtn);
+        grid.add(logoutBtn);
+
+        add(grid, BorderLayout.CENTER);
+
+        // -------- Actions --------
+        manageBtn.addActionListener(e ->
+            new CourseManagerFrame()
+        );
+
+        reportBtn.addActionListener(e ->
+            new ReportFrame()
+        );
+
+        timetableBtn.addActionListener(e ->
+            JOptionPane.showMessageDialog(
+                this,
+                "Timetable is generated dynamically per student.",
+                "Info",
+                JOptionPane.INFORMATION_MESSAGE
+            )
+        );
+
+        logoutBtn.addActionListener(e -> {
+            dispose();
+            new LoginFrame();
+        });
+
+        setSize(600, 400);
         setLocationRelativeTo(null);
         setVisible(true);
     }

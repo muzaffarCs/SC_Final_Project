@@ -1,123 +1,110 @@
 package crts;
 
 import javax.swing.*;
+import java.awt.*;
 import java.sql.*;
 
 public class CourseRegistrationFrame extends JFrame {
 
-    int userId;
-    JTextField courseIdField = new JTextField(10);
+    private int registrationId;
+    private JTextField courseCodeField = new JTextField(18);
 
-    public CourseRegistrationFrame(int userId) {
-        this.userId = userId;
+    public CourseRegistrationFrame(int registrationId) {
+        this.registrationId = registrationId;
 
-        setTitle("Course Registration");
-        setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
+        setTitle("Register Course");
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setSize(450, 300);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout());
 
-        add(new JLabel("Enter Course ID:"));
-        add(courseIdField);
+        // ---------- Title ----------
+        add(UIHelper.title("REGISTER COURSE"), BorderLayout.NORTH);
 
-        JButton registerBtn = new JButton("Register");
-        add(registerBtn);
+        // ---------- Form ----------
+        JPanel form = new JPanel(new GridBagLayout());
+        form.setBorder(BorderFactory.createEmptyBorder(30, 40, 30, 40));
+
+        GridBagConstraints c = new GridBagConstraints();
+        c.insets = new Insets(12, 12, 12, 12);
+        c.fill = GridBagConstraints.HORIZONTAL;
+
+        Dimension fieldSize = new Dimension(220, 28);
+
+        // ---------- Course Code ----------
+        c.gridx = 0; c.gridy = 0;
+        form.add(new JLabel("Course Code"), c);
+
+        c.gridx = 1;
+        courseCodeField.setPreferredSize(fieldSize);
+        form.add(courseCodeField, c);
+
+        // ---------- Button ----------
+        JButton registerBtn = UIHelper.button("Register Course");
+        registerBtn.setPreferredSize(new Dimension(160, 35));
+
+        c.gridx = 0; c.gridy = 1;
+        c.gridwidth = 2;
+        c.anchor = GridBagConstraints.CENTER;
+        form.add(registerBtn, c);
+
+        add(form, BorderLayout.CENTER);
 
         registerBtn.addActionListener(e -> registerCourse());
 
-        setSize(300,200);
-        setLocationRelativeTo(null);
         setVisible(true);
     }
 
-    void registerCourse() {
-        int courseId;
+    private void registerCourse() {
+        String courseCode = courseCodeField.getText().trim();
 
-        try {
-            courseId = Integer.parseInt(courseIdField.getText());
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Invalid Course ID");
+        if (courseCode.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Enter course code");
             return;
         }
 
         try (Connection con = DBConnection.getConnection()) {
 
-            /* -------------------------------
-               1️⃣ CHECK COURSE EXISTS + SEATS
-            -------------------------------- */
-            PreparedStatement psCourse = con.prepareStatement(
-                "SELECT day, time_slot, seats FROM courses WHERE course_id=?"
+            PreparedStatement getCourse = con.prepareStatement(
+                "SELECT course_id, available_seats FROM courses WHERE course_code=?"
             );
-            psCourse.setInt(1, courseId);
-            ResultSet courseRS = psCourse.executeQuery();
+            getCourse.setString(1, courseCode);
+            ResultSet rs = getCourse.executeQuery();
 
-            if (!courseRS.next()) {
+            if (!rs.next()) {
                 JOptionPane.showMessageDialog(this, "Course not found");
                 return;
             }
 
-            String day = courseRS.getString("day");
-            String time = courseRS.getString("time_slot");
-            int seats = courseRS.getInt("seats");
+            int courseId = rs.getInt("course_id");
+            int seats = rs.getInt("available_seats");
 
             if (seats <= 0) {
-                JOptionPane.showMessageDialog(this, "Class Full");
+                JOptionPane.showMessageDialog(this, "No seats available");
                 return;
             }
 
-            /* -------------------------------
-               2️⃣ CHECK ALREADY REGISTERED
-            -------------------------------- */
-            PreparedStatement already = con.prepareStatement(
-                "SELECT * FROM registrations WHERE user_id=? AND course_id=?"
-            );
-            already.setInt(1, userId);
-            already.setInt(2, courseId);
-
-            if (already.executeQuery().next()) {
-                JOptionPane.showMessageDialog(this, "Already registered");
-                return;
-            }
-
-            /* -------------------------------
-               3️⃣ CLASH DETECTION (UC4)
-            -------------------------------- */
-            PreparedStatement clash = con.prepareStatement("""
-                SELECT * FROM courses c
-                JOIN registrations r ON c.course_id = r.course_id
-                WHERE r.user_id=? AND c.day=? AND c.time_slot=?
-            """);
-            clash.setInt(1, userId);
-            clash.setString(2, day);
-            clash.setString(3, time);
-
-            if (clash.executeQuery().next()) {
-                JOptionPane.showMessageDialog(this, "Time clash detected");
-                return;
-            }
-
-            /* -------------------------------
-               4️⃣ REGISTER COURSE
-            -------------------------------- */
             PreparedStatement insert = con.prepareStatement(
-                "INSERT INTO registrations(user_id, course_id) VALUES (?,?)"
+                "INSERT INTO registrations(registration_id, course_id) VALUES (?, ?)"
             );
-            insert.setInt(1, userId);
+            insert.setInt(1, registrationId);
             insert.setInt(2, courseId);
             insert.executeUpdate();
 
-            /* -------------------------------
-               5️⃣ UPDATE SEATS
-            -------------------------------- */
-            PreparedStatement updateSeats = con.prepareStatement(
-                "UPDATE courses SET seats = seats - 1 WHERE course_id=?"
+            PreparedStatement update = con.prepareStatement(
+                "UPDATE courses SET available_seats = available_seats - 1 WHERE course_id=?"
             );
-            updateSeats.setInt(1, courseId);
-            updateSeats.executeUpdate();
+            update.setInt(1, courseId);
+            update.executeUpdate();
 
             JOptionPane.showMessageDialog(this, "Course Registered Successfully");
             dispose();
 
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Registration failed");
+        } catch (SQLIntegrityConstraintViolationException e) {
+            JOptionPane.showMessageDialog(this, "Already registered in this course");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, e.getMessage());
+            e.printStackTrace();
         }
     }
 }

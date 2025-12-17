@@ -1,62 +1,29 @@
 package crts;
-
 import javax.swing.*;
 import java.sql.*;
 import java.util.*;
 
 public class TimetableFrame extends JFrame {
 
-    // STUDENT VIEW
-    public TimetableFrame(int userId) {
-        setTitle("My Timetable");
+    public TimetableFrame(int regId) {
+        String[] cols={"Course","Day","Time"};
+        ArrayList<Object[]> data=new ArrayList<>();
 
-        String[] cols = {"Course Name", "Day", "Time Slot"};
-        ArrayList<Object[]> rows = new ArrayList<>();
-
-        try (Connection con = DBConnection.getConnection()) {
-
-            PreparedStatement ps = con.prepareStatement(
-                "SELECT course_name, day, time_slot " +
-                "FROM courses c JOIN registrations r " +
-                "ON c.course_id = r.course_id " +
-                "WHERE r.user_id = ?"
+        try(Connection con=DBConnection.getConnection()){
+            PreparedStatement ps=con.prepareStatement(
+                "SELECT c.course_title,c.day,c.time_slot FROM courses c " +
+                "JOIN registrations r ON c.course_id=r.course_id " +
+                "WHERE r.registration_id=?"
             );
-            ps.setInt(1, userId);
-            ResultSet rs = ps.executeQuery();
+            ps.setInt(1,regId);
+            ResultSet rs=ps.executeQuery();
+            while(rs.next())
+                data.add(new Object[]{rs.getString(1),rs.getString(2),rs.getString(3)});
+        }catch(Exception e){}
 
-            while (rs.next()) {
-                rows.add(new Object[] {
-                    rs.getString("course_name"),
-                    rs.getString("day"),
-                    rs.getString("time_slot")
-                });
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        if (rows.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                "No timetable found.\nRegister courses first.");
-            dispose();
-            return;
-        }
-
-        Object[][] data = rows.toArray(new Object[0][]);
-        JTable table = new JTable(data, cols);
-
-        add(new JScrollPane(table));
-
+        JTable t=new JTable(data.toArray(new Object[0][]),cols);
+        add(new JScrollPane(t));
         setSize(500,300);
-        setLocationRelativeTo(null);
         setVisible(true);
     }
-
-    // ADMIN GENERATE TIMETABLE (UC6)
-    public TimetableFrame() {
-        JOptionPane.showMessageDialog(this,
-            "Timetable generated successfully.\nNo conflicts detected.");
-    }
 }
-

@@ -4,27 +4,51 @@ import javax.swing.*;
 import java.awt.*;
 
 public class StudentDashboard extends JFrame {
-    int userId;
 
-    public StudentDashboard(int id) {
-        userId = id;
+    private final int registrationId;   // ✅ final = good practice
+
+    public StudentDashboard(int registrationId) {
+        this.registrationId = registrationId;
+
         setTitle("Student Dashboard");
-        setLayout(new GridLayout(2,2,15,15));
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setLayout(new BorderLayout());
 
-        JButton register = new JButton("Register Courses");
-        JButton drop = new JButton("Drop Course");
-        JButton view = new JButton("View Timetable");
-        JButton logout = new JButton("Logout");
+        add(UIHelper.title("STUDENT DASHBOARD"), BorderLayout.NORTH);
 
-        add(register); add(drop);
-        add(view); add(logout);
+        JPanel grid = UIHelper.panel(new GridLayout(2, 2, 20, 20));
 
-        register.addActionListener(e -> new CourseRegistrationFrame(userId));
-        view.addActionListener(e -> new TimetableFrame(userId));
-        drop.addActionListener(e -> new DropCourseFrame(userId));
-        logout.addActionListener(e -> { dispose(); new LoginFrame(); });
+        JButton registerBtn = UIHelper.button("Register Course");
+        JButton dropBtn = UIHelper.button("Drop Course");
+        JButton viewBtn = UIHelper.button("View Timetable");
+        JButton logoutBtn = UIHelper.button("Logout");
 
-        setSize(500,300);
+        grid.add(registerBtn);
+        grid.add(dropBtn);
+        grid.add(viewBtn);
+        grid.add(logoutBtn);
+
+        add(grid, BorderLayout.CENTER);
+
+        // ✅ FIELD IS USED HERE
+        registerBtn.addActionListener(e ->
+            new CourseRegistrationFrame(this.registrationId)
+        );
+
+        dropBtn.addActionListener(e ->
+            new DropCourseFrame(this.registrationId)
+        );
+
+        viewBtn.addActionListener(e ->
+            new TimetableFrame(this.registrationId)
+        );
+
+        logoutBtn.addActionListener(e -> {
+            dispose();
+            new LoginFrame();
+        });
+
+        setSize(600, 400);
         setLocationRelativeTo(null);
         setVisible(true);
     }
