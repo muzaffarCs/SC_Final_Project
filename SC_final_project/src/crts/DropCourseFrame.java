@@ -10,6 +10,7 @@ public class DropCourseFrame extends JFrame {
     private JTextField courseCodeField = new JTextField(18);
 
     public DropCourseFrame(int registrationId) {
+
         this.registrationId = registrationId;
 
         setTitle("Drop Course");
@@ -18,10 +19,8 @@ public class DropCourseFrame extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // ---------- Title ----------
         add(UIHelper.title("DROP COURSE"), BorderLayout.NORTH);
 
-        // ---------- Form ----------
         JPanel form = new JPanel(new GridBagLayout());
         form.setBorder(BorderFactory.createEmptyBorder(30, 40, 30, 40));
 
@@ -29,20 +28,15 @@ public class DropCourseFrame extends JFrame {
         c.insets = new Insets(12, 12, 12, 12);
         c.fill = GridBagConstraints.HORIZONTAL;
 
-        Dimension fieldSize = new Dimension(220, 28);
-
-        // ---------- Course Code ----------
         c.gridx = 0;
         c.gridy = 0;
         form.add(new JLabel("Course Code"), c);
 
         c.gridx = 1;
-        courseCodeField.setPreferredSize(fieldSize);
+        courseCodeField.setPreferredSize(new Dimension(220, 28));
         form.add(courseCodeField, c);
 
-        // ---------- Button ----------
         JButton dropBtn = UIHelper.button("Drop Course");
-        dropBtn.setPreferredSize(new Dimension(150, 35));
 
         c.gridx = 0;
         c.gridy = 1;
@@ -58,6 +52,7 @@ public class DropCourseFrame extends JFrame {
     }
 
     private void dropCourse() {
+
         String courseCode = courseCodeField.getText().trim();
 
         if (courseCode.isEmpty()) {
@@ -67,39 +62,57 @@ public class DropCourseFrame extends JFrame {
 
         try (Connection con = DBConnection.getConnection()) {
 
-            // Get course_id
+            con.setAutoCommit(false); // Transaction start
+
+            // Find all registered slots for this course code
             PreparedStatement ps = con.prepareStatement(
-                    "SELECT course_id FROM courses WHERE course_code=?");
-            ps.setString(1, courseCode);
+                    "SELECT c.course_id " +
+                    "FROM registrations r " +
+                    "JOIN courses c ON r.course_id = c.course_id " +
+                    "WHERE r.registration_id = ? AND c.course_code = ?");
+
+            ps.setInt(1, registrationId);
+            ps.setString(2, courseCode);
+
             ResultSet rs = ps.executeQuery();
 
-            if (!rs.next()) {
-                JOptionPane.showMessageDialog(this, "Course not found");
+            boolean found = false;
+
+            while (rs.next()) {
+
+                found = true;
+                int courseId = rs.getInt("course_id");
+
+                // Delete registration
+                PreparedStatement del = con.prepareStatement(
+                        "DELETE FROM registrations WHERE registration_id=? AND course_id=?");
+                del.setInt(1, registrationId);
+                del.setInt(2, courseId);
+                del.executeUpdate();
+
+                // Restore seat
+                PreparedStatement update = con.prepareStatement(
+                        "UPDATE courses SET available_seats = available_seats + 1 WHERE course_id=?");
+                update.setInt(1, courseId);
+                update.executeUpdate();
+            }
+
+            if (!found) {
+                con.rollback();
+                JOptionPane.showMessageDialog(this,
+                        "You are not registered in this course");
                 return;
             }
 
-            int courseId = rs.getInt(1);
+            con.commit(); // Transaction success
 
-            PreparedStatement del = con.prepareStatement(
-                    "DELETE FROM registrations WHERE registration_id=? AND course_id=?");
-            del.setInt(1, registrationId);
-            del.setInt(2, courseId);
-
-            if (del.executeUpdate() == 0) {
-                JOptionPane.showMessageDialog(this, "You are not registered in this course");
-                return;
-            }
-
-            PreparedStatement update = con.prepareStatement(
-                    "UPDATE courses SET available_seats = available_seats + 1 WHERE course_id=?");
-            update.setInt(1, courseId);
-            update.executeUpdate();
-
-            JOptionPane.showMessageDialog(this, "Course Dropped Successfully");
+            JOptionPane.showMessageDialog(this,
+                    "Course dropped successfully (all time slots)");
             dispose();
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, e.getMessage());
+            JOptionPane.showMessageDialog(this, "Drop failed: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

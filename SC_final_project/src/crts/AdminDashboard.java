@@ -16,19 +16,23 @@ public class AdminDashboard extends JFrame {
         JPanel grid = UIHelper.panel(new GridLayout(2, 2, 20, 20));
 
         JButton manageBtn = UIHelper.button("Manage Courses");
+        JButton addStudentBtn = UIHelper.button("Add Student");
         JButton timetableBtn = UIHelper.button("Generate Timetable");
         JButton reportBtn = UIHelper.button("Reports");
         JButton logoutBtn = UIHelper.button("Logout");
 
         grid.add(manageBtn);
+        grid.add(addStudentBtn);
         grid.add(timetableBtn);
         grid.add(reportBtn);
         grid.add(logoutBtn);
 
         add(grid, BorderLayout.CENTER);
 
-        // -------- Actions --------
+        //  Actions 
         manageBtn.addActionListener(e -> new CourseManagerFrame());
+
+        addStudentBtn.addActionListener(e -> new AddStudentFrame());
 
         reportBtn.addActionListener(e -> new ReportFrame());
 
