@@ -3,6 +3,7 @@ package crts;
 import javax.swing.*;
 import java.awt.*;
 import java.sql.*;
+import java.time.LocalDate;
 
 public class DropCourseFrame extends JFrame {
 
@@ -14,7 +15,6 @@ public class DropCourseFrame extends JFrame {
         this.registrationId = registrationId;
 
         setTitle("Drop Course");
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(450, 300);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
@@ -28,8 +28,7 @@ public class DropCourseFrame extends JFrame {
         c.insets = new Insets(12, 12, 12, 12);
         c.fill = GridBagConstraints.HORIZONTAL;
 
-        c.gridx = 0;
-        c.gridy = 0;
+        c.gridx = 0; c.gridy = 0;
         form.add(new JLabel("Course Code"), c);
 
         c.gridx = 1;
@@ -38,8 +37,7 @@ public class DropCourseFrame extends JFrame {
 
         JButton dropBtn = UIHelper.button("Drop Course");
 
-        c.gridx = 0;
-        c.gridy = 1;
+        c.gridx = 0; c.gridy = 1;
         c.gridwidth = 2;
         c.anchor = GridBagConstraints.CENTER;
         form.add(dropBtn, c);
@@ -62,14 +60,13 @@ public class DropCourseFrame extends JFrame {
 
         try (Connection con = DBConnection.getConnection()) {
 
-            con.setAutoCommit(false); // Transaction start
+            con.setAutoCommit(false);
 
-            // Find all registered slots for this course code
             PreparedStatement ps = con.prepareStatement(
-                    "SELECT c.course_id " +
-                    "FROM registrations r " +
-                    "JOIN courses c ON r.course_id = c.course_id " +
-                    "WHERE r.registration_id = ? AND c.course_code = ?");
+                "SELECT c.course_id, c.drop_deadline " +
+                "FROM registrations r JOIN courses c " +
+                "ON r.course_id=c.course_id " +
+                "WHERE r.registration_id=? AND c.course_code=?");
 
             ps.setInt(1, registrationId);
             ps.setString(2, courseCode);
@@ -77,37 +74,44 @@ public class DropCourseFrame extends JFrame {
             ResultSet rs = ps.executeQuery();
 
             boolean found = false;
+            LocalDate today = LocalDate.now();
 
             while (rs.next()) {
 
                 found = true;
+
+                LocalDate deadline = rs.getDate("drop_deadline").toLocalDate();
+                if (today.isAfter(deadline)) {
+                    con.rollback();
+                    JOptionPane.showMessageDialog(this,
+                        "Drop deadline passed: " + deadline);
+                    return;
+                }
+
                 int courseId = rs.getInt("course_id");
 
-                // Delete registration
                 PreparedStatement del = con.prepareStatement(
-                        "DELETE FROM registrations WHERE registration_id=? AND course_id=?");
+                    "DELETE FROM registrations WHERE registration_id=? AND course_id=?");
                 del.setInt(1, registrationId);
                 del.setInt(2, courseId);
                 del.executeUpdate();
 
-                // Restore seat
-                PreparedStatement update = con.prepareStatement(
-                        "UPDATE courses SET available_seats = available_seats + 1 WHERE course_id=?");
-                update.setInt(1, courseId);
-                update.executeUpdate();
+                PreparedStatement upd = con.prepareStatement(
+                    "UPDATE courses SET available_seats=available_seats+1 WHERE course_id=?");
+                upd.setInt(1, courseId);
+                upd.executeUpdate();
             }
 
             if (!found) {
                 con.rollback();
                 JOptionPane.showMessageDialog(this,
-                        "You are not registered in this course");
+                    "You are not registered in this course");
                 return;
             }
 
-            con.commit(); // Transaction success
-
+            con.commit();
             JOptionPane.showMessageDialog(this,
-                    "Course dropped successfully (all time slots)");
+                "Course dropped successfully");
             dispose();
 
         } catch (Exception e) {
