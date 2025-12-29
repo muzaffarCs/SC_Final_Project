@@ -69,7 +69,7 @@ public class CourseRegistrationFrame extends JFrame {
                         rs.getString("time_slot"),
                         rs.getString("room"),
                         rs.getInt("available_seats"),
-                        rs.getDate("drop_deadline") // ✅ only addition
+                        rs.getDate("drop_deadline")
                 });
             }
 

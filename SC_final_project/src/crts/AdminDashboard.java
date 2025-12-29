@@ -29,7 +29,7 @@ public class AdminDashboard extends JFrame {
 
         add(grid, BorderLayout.CENTER);
 
-        //  Actions 
+        // Actions
         manageBtn.addActionListener(e -> new CourseManagerFrame());
 
         addStudentBtn.addActionListener(e -> new AddStudentFrame());

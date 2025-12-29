@@ -23,8 +23,7 @@ public class TimetableFrame extends JFrame {
 
         try (Connection con = DBConnection.getConnection()) {
 
-            String sql =
-                    "SELECT c.course_code, c.course_title, c.day, c.time_slot, c.room " +
+            String sql = "SELECT c.course_code, c.course_title, c.day, c.time_slot, c.room " +
                     "FROM courses c " +
                     "JOIN registrations r ON c.course_id = r.course_id " +
                     "WHERE r.registration_id = ? " +

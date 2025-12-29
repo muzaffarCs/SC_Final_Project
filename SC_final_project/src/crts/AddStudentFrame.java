@@ -32,35 +32,40 @@ public class AddStudentFrame extends JFrame {
         Dimension fieldSize = new Dimension(220, 28);
 
         // Username
-        c.gridx = 0; c.gridy = 0;
+        c.gridx = 0;
+        c.gridy = 0;
         form.add(new JLabel("Username"), c);
         c.gridx = 1;
         usernameField.setPreferredSize(fieldSize);
         form.add(usernameField, c);
 
         // Email
-        c.gridx = 0; c.gridy++;
+        c.gridx = 0;
+        c.gridy++;
         form.add(new JLabel("Email"), c);
         c.gridx = 1;
         emailField.setPreferredSize(fieldSize);
         form.add(emailField, c);
 
         // Password
-        c.gridx = 0; c.gridy++;
+        c.gridx = 0;
+        c.gridy++;
         form.add(new JLabel("Password"), c);
         c.gridx = 1;
         passwordField.setPreferredSize(fieldSize);
         form.add(passwordField, c);
 
         // Program
-        c.gridx = 0; c.gridy++;
+        c.gridx = 0;
+        c.gridy++;
         form.add(new JLabel("Program"), c);
         c.gridx = 1;
         programField.setPreferredSize(fieldSize);
         form.add(programField, c);
 
         // Semester
-        c.gridx = 0; c.gridy++;
+        c.gridx = 0;
+        c.gridy++;
         form.add(new JLabel("Semester"), c);
         c.gridx = 1;
         semesterField.setPreferredSize(fieldSize);
@@ -70,7 +75,8 @@ public class AddStudentFrame extends JFrame {
         JButton addBtn = UIHelper.button("Add Student");
         addBtn.setPreferredSize(new Dimension(160, 35));
 
-        c.gridx = 0; c.gridy++;
+        c.gridx = 0;
+        c.gridy++;
         c.gridwidth = 2;
         c.anchor = GridBagConstraints.CENTER;
         form.add(addBtn, c);
@@ -111,9 +117,8 @@ public class AddStudentFrame extends JFrame {
 
             // Insert into users
             PreparedStatement userPS = con.prepareStatement(
-                "INSERT INTO users(username, email, password_hash, role) VALUES (?, ?, ?, 'STUDENT')",
-                Statement.RETURN_GENERATED_KEYS
-            );
+                    "INSERT INTO users(username, email, password_hash, role) VALUES (?, ?, ?, 'STUDENT')",
+                    Statement.RETURN_GENERATED_KEYS);
             userPS.setString(1, username);
             userPS.setString(2, email);
             userPS.setString(3, PasswordUtil.hash(password));
@@ -129,8 +134,7 @@ public class AddStudentFrame extends JFrame {
 
             // Insert into students
             PreparedStatement studentPS = con.prepareStatement(
-                "INSERT INTO students(registration_id, program, semester) VALUES (?, ?, ?)"
-            );
+                    "INSERT INTO students(registration_id, program, semester) VALUES (?, ?, ?)");
             studentPS.setInt(1, userId);
             studentPS.setString(2, program);
             studentPS.setInt(3, semester);

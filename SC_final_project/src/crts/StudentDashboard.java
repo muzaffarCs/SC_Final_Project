@@ -16,7 +16,6 @@ public class StudentDashboard extends JFrame {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // Header
         add(UIHelper.title("STUDENT DASHBOARD"), BorderLayout.NORTH);
 
         // Student Info Panel

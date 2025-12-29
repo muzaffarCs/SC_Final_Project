@@ -20,23 +20,22 @@ public class GenerateTimetableFrame extends JFrame {
         String[] cols = { "Student ID", "Course Code", "Course Title", "Day", "Time Slot", "Status" };
         ArrayList<Object[]> data = new ArrayList<>();
 
-         LinkedHashMap<String, java.util.List<String>> daySlots = new LinkedHashMap<>();
-            daySlots.put("Monday",
-                    java.util.Arrays.asList("09:05-10:35", "10:45-12:15", "12:25-13:55", "14:15-15:45", "16:00-17:30"));
-            daySlots.put("Tuesday",
-                    Arrays.asList("09:05-10:35", "10:45-12:15", "12:25-13:55", "14:15-15:45", "16:00-17:30"));
-            daySlots.put("Wednesday",
-                    Arrays.asList("09:05-10:35", "10:45-12:15", "12:25-13:55", "14:15-15:45", "16:00-17:30"));
-            daySlots.put("Thursday",
-                    Arrays.asList("09:05-10:35", "10:45-12:15", "12:25-13:55", "14:15-15:45", "16:00-17:30"));
-            daySlots.put("Friday",
-                    Arrays.asList("09:05-10:35", "10:45-12:15", "12:25-13:55", "14:15-15:45", "16:00-17:30"));
+        LinkedHashMap<String, java.util.List<String>> daySlots = new LinkedHashMap<>();
+        daySlots.put("Monday",
+                java.util.Arrays.asList("09:05-10:35", "10:45-12:15", "12:25-13:55", "14:15-15:45", "16:00-17:30"));
+        daySlots.put("Tuesday",
+                Arrays.asList("09:05-10:35", "10:45-12:15", "12:25-13:55", "14:15-15:45", "16:00-17:30"));
+        daySlots.put("Wednesday",
+                Arrays.asList("09:05-10:35", "10:45-12:15", "12:25-13:55", "14:15-15:45", "16:00-17:30"));
+        daySlots.put("Thursday",
+                Arrays.asList("09:05-10:35", "10:45-12:15", "12:25-13:55", "14:15-15:45", "16:00-17:30"));
+        daySlots.put("Friday",
+                Arrays.asList("09:05-10:35", "10:45-12:15", "12:25-13:55", "14:15-15:45", "16:00-17:30"));
 
         try (Connection con = DBConnection.getConnection()) {
 
-            ResultSet rsStudents =
-                    con.prepareStatement("SELECT registration_id FROM students")
-                            .executeQuery();
+            ResultSet rsStudents = con.prepareStatement("SELECT registration_id FROM students")
+                    .executeQuery();
 
             while (rsStudents.next()) {
 
@@ -44,8 +43,8 @@ public class GenerateTimetableFrame extends JFrame {
 
                 PreparedStatement psCourses = con.prepareStatement(
                         "SELECT c.course_id, c.course_code, c.course_title, c.day, c.time_slot " +
-                        "FROM courses c JOIN registrations r ON c.course_id = r.course_id " +
-                        "WHERE r.registration_id = ?");
+                                "FROM courses c JOIN registrations r ON c.course_id = r.course_id " +
+                                "WHERE r.registration_id = ?");
                 psCourses.setInt(1, studentId);
 
                 ResultSet rsCourses = psCourses.executeQuery();
@@ -107,8 +106,8 @@ public class GenerateTimetableFrame extends JFrame {
     private boolean isSlotFree(Connection con, int studentId, String day, String slot) throws SQLException {
         PreparedStatement ps = con.prepareStatement(
                 "SELECT COUNT(*) FROM courses c " +
-                "JOIN registrations r ON c.course_id = r.course_id " +
-                "WHERE r.registration_id=? AND c.day=? AND c.time_slot=?");
+                        "JOIN registrations r ON c.course_id = r.course_id " +
+                        "WHERE r.registration_id=? AND c.day=? AND c.time_slot=?");
         ps.setInt(1, studentId);
         ps.setString(2, day);
         ps.setString(3, slot);

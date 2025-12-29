@@ -79,7 +79,8 @@ public class DropCourseFrame extends JFrame {
             while (rs.next()) {
 
                 found = true;
-
+                
+                // check the deadline 
                 LocalDate deadline = rs.getDate("drop_deadline").toLocalDate();
                 if (today.isAfter(deadline)) {
                     con.rollback();
