@@ -17,14 +17,18 @@ public class CourseRegistrationFrame extends JFrame {
         this.registrationId = registrationId;
 
         setTitle("Course Registration");
-        setSize(850, 450);
+        setSize(900, 450);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         add(UIHelper.title("COURSE REGISTRATION"), BorderLayout.NORTH);
 
-        String[] cols = { "ID", "Code", "Title", "Day", "Time Slot", "Room", "Seats" };
+        String[] cols = {
+                "ID", "Code", "Title", "Day",
+                "Time Slot", "Room", "Seats", "Drop Deadline"
+        };
+
         model = new DefaultTableModel(cols, 0) {
             @Override
             public boolean isCellEditable(int r, int c) {
@@ -64,7 +68,8 @@ public class CourseRegistrationFrame extends JFrame {
                         rs.getString("day"),
                         rs.getString("time_slot"),
                         rs.getString("room"),
-                        rs.getInt("available_seats")
+                        rs.getInt("available_seats"),
+                        rs.getDate("drop_deadline") // ✅ only addition
                 });
             }
 
@@ -92,7 +97,7 @@ public class CourseRegistrationFrame extends JFrame {
                 return;
             }
 
-            //  Get all course slots
+            // Get all course slots
             PreparedStatement psSlots = con.prepareStatement(
                     "SELECT course_id, day, time_slot, available_seats " +
                             "FROM courses WHERE course_code=?");
