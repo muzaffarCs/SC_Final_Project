@@ -1,0 +1,6 @@
+# Ignore compiled Java files
+*.class
+
+# Ignore build directories
+bin/
+SC_final_project/bin/
